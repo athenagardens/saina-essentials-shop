@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -6,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useCart } from "../components/CartContext";
 
 const DEFAULT_PRODUCTS = [
-  // TEAS – P80 for 25 sachets only
+  // TEAS
   { id: "tea_ginger", name: "Ginger Tea", category: "Teas", desc: "Warming digestive tea. Supports digestion and circulation.", image: "ginger.png", sizes: [{ label: "Box of 25 sachets", price: 80 }] },
   { id: "tea_peppermint", name: "Peppermint Tea", category: "Teas", desc: "Cooling and clarifying. Soothes the stomach.", image: "peppermint.png", sizes: [{ label: "Box of 25 sachets", price: 80 }] },
   { id: "tea_moringa", name: "Moringa Tea", category: "Teas", desc: "Nutrient-dense superfood leaves.", image: "moringa.png", sizes: [{ label: "Box of 25 sachets", price: 80 }] },
@@ -15,7 +16,7 @@ const DEFAULT_PRODUCTS = [
   { id: "tea_lemongrass", name: "Lemongrass Tea", category: "Teas", desc: "Uplifting citrus notes.", image: "lemongrass.png", sizes: [{ label: "Box of 25 sachets", price: 80 }] },
   { id: "hibiscus_loose", name: "Infused Hibiscus Flowers", category: "Teas", desc: "Best-seller. Infused with cloves & cinnamon.", image: "hibiscus_loose.png", sizes: [{ label: "250g", price: 120 }] },
 
-  // COFFEE – P140 for 250g only
+  // COFFEE
   { id: "coffee_kilimanjaro", name: "Kilimanjaro Arabica", category: "Coffee", desc: "Pure Arabica beans. Clean energy.", image: "coffee.png", sizes: [{ label: "250g whole beans", price: 140 }] },
 
   // SNACKS
@@ -33,7 +34,7 @@ const DEFAULT_PRODUCTS = [
   { id: "flour_coconut", name: "Coconut Flour", category: "Powders", desc: "High-fibre, low-carb.", image: "coconut_flour.png", sizes: [{ label: "250g", price: 80 }] },
   { id: "powder_baobab", name: "Baobab Powder", category: "Powders", desc: "Vitamin C rich African superfruit.", image: "baobab.png", sizes: [{ label: "100g", price: 80 }, { label: "250g", price: 150 }] },
 
-  // HONEYS – 250g at P50
+  // HONEYS
   { id: "honey_ginger", name: "Ginger Infused Honey", category: "Honeys", desc: "Raw honey infused with ginger.", image: "honey_ginger.png", sizes: [{ label: "250g", price: 50 }] },
   { id: "honey_turmeric", name: "Turmeric Infused Honey", category: "Honeys", desc: "Raw honey infused with turmeric.", image: "honey_turmeric.png", sizes: [{ label: "250g", price: 50 }] },
   { id: "honey_lemon_cinnamon", name: "Lemon & Cinnamon Infused Honey", category: "Honeys", desc: "Supports immunity.", image: "honey_lemon_cinnamon.png", sizes: [{ label: "250g", price: 50 }] },
@@ -43,7 +44,7 @@ const DEFAULT_PRODUCTS = [
   { id: "oil_olive", name: "Extra Virgin Olive Oil", category: "Oils", desc: "Premium cold-pressed olive oil.", image: "olive_oil.png", sizes: [{ label: "250ml", price: 200 }] },
   { id: "oil_avocado", name: "Avocado Oil", category: "Oils", desc: "Pure cold-pressed avocado oil.", image: "avocado_oil.png", sizes: [{ label: "250ml", price: 200 }] },
 
-  // ESSENTIAL OILS – 10ml only at P120
+  // ESSENTIAL OILS
   { id: "eo_headache", name: "Headache Relief Blend", category: "Essential Oils", desc: "Eases tension and headaches.", image: "eo_headache.png", sizes: [{ label: "10ml", price: 120 }] },
   { id: "eo_joint", name: "Joint Pain Relief Blend", category: "Essential Oils", desc: "Supports joint comfort.", image: "eo_joint.png", sizes: [{ label: "10ml", price: 120 }] },
   { id: "eo_stress", name: "Stress & Insomnia Blend", category: "Essential Oils", desc: "Calming for stress and sleep.", image: "eo_stress.png", sizes: [{ label: "10ml", price: 120 }] },
@@ -56,10 +57,22 @@ const DEFAULT_PRODUCTS = [
   { id: "bath_chamomile", name: "Chamomile Bathing Tea", category: "Bathing", desc: "Soft soothing flowers.", image: "chamomile.png", sizes: [{ label: "80g", price: 80 }] },
 ];
 
-const CATEGORIES = ["All", "Teas & Coffee", "Snacks & Honeys", "Powders", "Oils", "Essential Oils", "Bathing"];
+const CATEGORIES = [
+  "All",
+  "Teas & Coffee",
+  "Snacks & Honeys",
+  "Powders",
+  "Oils",
+  "Essential Oils",
+  "Bathing",
+];
+
+const ASSET_BASE =
+  "https://raw.githubusercontent.com/athenagardens/Saina-Naturals/main/assets/";
 
 export default function ShopPage() {
   const { addToCart, totalItems } = useCart();
+
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedSizes, setSelectedSizes] = useState<{ [key: string]: string }>({});
@@ -68,22 +81,32 @@ export default function ShopPage() {
 
   useEffect(() => {
     const savedProducts = localStorage.getItem("saina-products");
+
     if (savedProducts) {
       try {
         setProducts(JSON.parse(savedProducts));
-      } catch (e) {}
+      } catch {
+        console.error("Could not load saved products.");
+      }
     }
 
     const savedStock = localStorage.getItem("saina-stock");
+
     if (savedStock) {
       try {
         const parsed = JSON.parse(savedStock);
         const map: { [key: string]: number } = {};
-        parsed.forEach((item: any) => {
-          map[item.id] = item.stock;
-        });
+
+        if (Array.isArray(parsed)) {
+          parsed.forEach((item: { id: string; stock: number }) => {
+            map[item.id] = item.stock;
+          });
+        }
+
         setStock(map);
-      } catch (e) {}
+      } catch {
+        console.error("Could not load saved stock.");
+      }
     }
   }, []);
 
@@ -98,13 +121,16 @@ export default function ShopPage() {
 
   const handleAdd = (product: any) => {
     const currentStock = stock[product.id];
+
     if (currentStock !== undefined && currentStock <= 0) {
       alert("This product is currently out of stock");
       return;
     }
 
     const sizeLabel = selectedSizes[product.id] || product.sizes[0].label;
-    const size = product.sizes.find((s: any) => s.label === sizeLabel) || product.sizes[0];
+    const size =
+      product.sizes.find((s: any) => s.label === sizeLabel) ||
+      product.sizes[0];
 
     addToCart({
       id: product.id,
@@ -114,33 +140,53 @@ export default function ShopPage() {
       quantity: 1,
       image: product.image,
     });
+
     alert(`${product.name} added to cart`);
   };
 
   return (
     <main className="min-h-screen bg-[#F8F5F0]">
+      {/* HEADER */}
       <header className="bg-[#F3EEE6] border-b border-[#EDE6DC] sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="font-serif text-xl text-[#2F3E2F]">Saina Naturals</Link>
+        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+          <Link
+            href="/"
+            className="font-serif text-base sm:text-lg font-semibold text-[#2F3E2F] leading-tight"
+          >
+            Saina Essentials
+          </Link>
+
           <div className="flex gap-3 items-center">
-            <Link href="/admin" className="text-sm text-[#5C6B4E]">Admin</Link>
-            <Link href="/cart" className="bg-[#2F3E2F] text-white px-4 py-2 rounded-lg text-sm">
+            <Link href="/admin" className="text-xs sm:text-sm text-[#5C6B4E]">
+              Admin
+            </Link>
+
+            <Link
+              href="/cart"
+              className="bg-[#2F3E2F] text-white px-3 py-2 rounded-lg text-xs sm:text-sm"
+            >
               Cart ({totalItems})
             </Link>
           </div>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        <h1 className="text-3xl font-serif text-[#2F3E2F] mb-6">Shop All Products</h1>
+      {/* PRODUCTS */}
+      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-10">
+        <h1 className="text-3xl font-serif text-[#2F3E2F] mb-6">
+          Shop All Products
+        </h1>
 
         <div className="flex flex-wrap gap-2 mb-8">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
+              type="button"
               onClick={() => setActiveCategory(cat)}
               className={`px-4 py-2 rounded-full text-sm font-medium ${
-                activeCategory === cat ? "bg-[#2F3E2F] text-white" : "bg-white border border-[#EDE6DC] text-[#2F3E2F]"
+                activeCategory === cat
+                  ? "bg-[#2F3E2F] text-white"
+                  : "bg-white border border-[#EDE6DC] text-[#2F3E2F]"
               }`}
             >
               {cat}
@@ -151,12 +197,15 @@ export default function ShopPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((product) => {
             const currentStock = stock[product.id];
-            const isOutOfStock = currentStock !== undefined && currentStock <= 0;
-            const imageUrl = `https://raw.githubusercontent.com/athenagardens/Saina-Naturals/main/assets/${product.image}`;
+            const isOutOfStock =
+              currentStock !== undefined && currentStock <= 0;
+            const imageUrl = `${ASSET_BASE}${product.image}`;
 
             return (
-              <div key={product.id} className="bg-white rounded-2xl border border-[#EDE6DC] overflow-hidden flex flex-col">
-                {/* Fixed aspect ratio image container */}
+              <div
+                key={product.id}
+                className="bg-white rounded-2xl border border-[#EDE6DC] overflow-hidden flex flex-col"
+              >
                 <div
                   className="relative w-full bg-[#F3EEE6] cursor-zoom-in"
                   style={{ aspectRatio: "1 / 1" }}
@@ -166,28 +215,45 @@ export default function ShopPage() {
                     src={imageUrl}
                     alt={product.name}
                     fill
-                    className="object-contain p-4"
+                    className="object-contain p-6"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
+
                   {isOutOfStock && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <span className="bg-red-600 text-white text-sm px-3 py-1 rounded-full">Out of Stock</span>
+                      <span className="bg-red-600 text-white text-sm px-3 py-1 rounded-full">
+                        Out of Stock
+                      </span>
                     </div>
                   )}
                 </div>
 
                 <div className="p-5 flex flex-col flex-1">
-                  <h3 className="font-serif text-lg text-[#2F3E2F]">{product.name}</h3>
-                  <p className="text-sm text-gray-600 mb-3 flex-1">{product.desc}</p>
+                  <h3 className="font-serif text-lg text-[#2F3E2F]">
+                    {product.name}
+                  </h3>
 
-                  {currentStock !== undefined && currentStock > 0 && currentStock < 10 && (
-                    <p className="text-xs text-orange-600 mb-2">Only {currentStock} left</p>
-                  )}
+                  <p className="text-sm text-gray-600 mb-3 flex-1">
+                    {product.desc}
+                  </p>
+
+                  {currentStock !== undefined &&
+                    currentStock > 0 &&
+                    currentStock < 10 && (
+                      <p className="text-xs text-orange-600 mb-2">
+                        Only {currentStock} left
+                      </p>
+                    )}
 
                   <select
                     className="w-full border rounded-lg px-3 py-2 text-sm mb-3"
                     value={selectedSizes[product.id] || product.sizes[0].label}
-                    onChange={(e) => setSelectedSizes({ ...selectedSizes, [product.id]: e.target.value })}
+                    onChange={(e) =>
+                      setSelectedSizes({
+                        ...selectedSizes,
+                        [product.id]: e.target.value,
+                      })
+                    }
                     disabled={isOutOfStock}
                   >
                     {product.sizes.map((s: any) => (
@@ -198,6 +264,7 @@ export default function ShopPage() {
                   </select>
 
                   <button
+                    type="button"
                     onClick={() => handleAdd(product)}
                     disabled={isOutOfStock}
                     className={`w-full py-2.5 rounded-lg text-sm font-medium ${
@@ -215,7 +282,50 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* ZOOM MODAL */}
+      {/* CONTACT FOOTER */}
+      <footer className="bg-[#2F3E2F] text-[#F8F5F0] mt-12">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="text-center">
+            <h2 className="font-serif text-lg font-semibold mb-3">
+              Saina Essentials
+            </h2>
+
+            <p className="text-sm text-[#EDE6DC] mb-2">
+              Natural products for everyday wellness.
+            </p>
+
+            <div className="text-sm leading-7 text-[#EDE6DC]">
+              <p>Plot 423KO, Notwane, Gaborone, Botswana</p>
+
+              <p>
+                Tel:{" "}
+                <a
+                  href="tel:+26774501880"
+                  className="underline hover:text-white"
+                >
+                  +267 745 01880
+                </a>
+              </p>
+
+              <p>
+                Email:{" "}
+                <a
+                  href="mailto:sainabw@gmail.com"
+                  className="underline hover:text-white"
+                >
+                  sainabw@gmail.com
+                </a>
+              </p>
+            </div>
+
+            <div className="border-t border-white/20 mt-6 pt-4 text-xs text-[#EDE6DC]">
+              © {new Date().getFullYear()} Saina Essentials. All rights reserved.
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* IMAGE ZOOM MODAL */}
       {zoomImage && (
         <div
           className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
@@ -223,11 +333,13 @@ export default function ShopPage() {
         >
           <div className="relative max-w-3xl w-full max-h-[90vh]">
             <button
+              type="button"
               onClick={() => setZoomImage(null)}
               className="absolute -top-10 right-0 text-white text-sm bg-black/50 px-3 py-1 rounded"
             >
               Close ✕
             </button>
+
             <img
               src={zoomImage}
               alt="Zoomed product"
